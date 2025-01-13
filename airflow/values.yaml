@@ -3,15 +3,17 @@ webserver:
   defaultUser:
     username: admin
     password: hazem
-images:
-  airflow:
-    repository: bitnami/airflow
-    tag: latest
-    pullPolicy: IfNotPresent
+defaultAirflowRepository: hazemfrikhisof/airflow-spark
+defaultAirflowTag: "1.2"
+image:
+  repository: hazemfrikhisof/airflow-spark
+  tag: "1.2"
+  pullPolicy: Always
+
 dags:
   gitSync:
     enabled: true
-    repo: "https://github.com/hazemfrikhi98/movie-analytics.git"
+    repo: "https://github.com/HazemFrikhi/Movie-Analytics.git"
     branch: "main"            # Branch to sync from
     rev: "HEAD"               # Git revision to checkout
     depth: 1                  # Clone depth (1 for shallow clone)
