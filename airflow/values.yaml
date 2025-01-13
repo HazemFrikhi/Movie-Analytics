@@ -4,10 +4,10 @@ webserver:
     username: admin
     password: hazem
 defaultAirflowRepository: hazemfrikhisof/airflow-spark
-defaultAirflowTag: "1.1"
+defaultAirflowTag: "1.2"
 image:
   repository: hazemfrikhisof/airflow-spark
-  tag: "1.1"
+  tag: "1.2"
   pullPolicy: Always
 
 dags:
