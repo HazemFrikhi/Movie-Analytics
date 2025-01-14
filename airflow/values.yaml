@@ -1,3 +1,13 @@
+airflow:
+  kubernetesPodTemplate:
+    extraVolumeMounts:
+      - name: files-volume
+        mountPath: /data/airflow
+  
+    extraVolumes:
+      - name: files-volume
+        persistentVolumeClaim:
+          claimName: files-volume-pvc
 executor: KubernetesExecutor
 webserver:
   defaultUser:
