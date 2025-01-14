@@ -1,74 +1,51 @@
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
-from datetime import datetime, timedelta
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, rand
+from datetime import datetime
 
-# Define default arguments for the DAG
-default_args = {
-    'owner': 'airflow',
-    'depends_on_past': False,
-    'email': ['your_email@example.com'],
-    'email_on_failure': False,
-    'email_on_retry': False,
-    'retries': 1,
-    'retry_delay': timedelta(minutes=5),
-}
+# Function to define and run the Spark job with random data
+def run_spark_job():
+    # Initialize the SparkSession
+    spark = SparkSession.builder \
+        .appName("this_is_spark") \
+        .getOrCreate()
 
-# Define the Python functions for the tasks
-def start_task():
-    print("Starting the workflow...")
+    # Generate random data with 100 rows and 3 columns
+    num_rows = 100
+    df = spark.range(num_rows) \
+        .withColumn("random_value1", rand()) \
+        .withColumn("random_value2", rand()) \
+        .withColumn("random_value3", rand())
 
-def extract_data():
-    print("Extracting data...")
+    # Perform some transformations: selecting columns and creating new ones
+    transformed_df = df.select("id", "random_value1", "random_value2", "random_value3") \
+        .withColumn("sum_of_values", col("random_value1") + col("random_value2") + col("random_value3"))
 
-def transform_data():
-    print("Transforming data...")
+    # Show the transformed DataFrame (for demonstration purposes)
+    transformed_df.show()
 
-def load_data():
-    print("Loading data into the target system...")
+    # Save the output to a new file (adjust the file format and location as needed)
+    
 
-def end_task():
-    print("Workflow completed!")
+    # Stop the Spark session when done
+    spark.stop()
 
-# Create the DAG
+# Define the DAG and its schedule
 dag = DAG(
-    'random_airflow_dag',
-    default_args=default_args,
-    description='A random example Airflow DAG',
-    schedule_interval=timedelta(days=1),
-    start_date=datetime(2025, 1, 1),
-    catchup=False,
+    'spark_using_pythonOp',  # DAG name
+    description='A simple Spark job DAG in Airflow with random data',
+    schedule_interval=None,  # Runs once when triggered manually (can set to cron expression)
+    start_date=datetime(2025, 1, 14),  # Start date for the DAG
+    catchup=False,  # Don't backfill
 )
 
-# Define the tasks
-start = PythonOperator(
-    task_id='start_task',
-    python_callable=start_task,
+# Define the Airflow task to run the Spark job
+spark_task = PythonOperator(
+    task_id='run_spark_task',
+    python_callable=run_spark_job,  # Call the Spark job function
     dag=dag,
 )
 
-extract = PythonOperator(
-    task_id='extract_data',
-    python_callable=extract_data,
-    dag=dag,
-)
-
-transform = PythonOperator(
-    task_id='transform_data',
-    python_callable=transform_data,
-    dag=dag,
-)
-
-load = PythonOperator(
-    task_id='load_data',
-    python_callable=load_data,
-    dag=dag,
-)
-
-end = PythonOperator(
-    task_id='end_task',
-    python_callable=end_task,
-    dag=dag,
-)
-
-# Define the task dependencies
-start >> extract >> transform >> load >> end
+# Set up the DAG task dependencies (if any)
+spark_task
