@@ -22,7 +22,7 @@ with DAG(
     # Task to submit the Spark job
     submit_spark_job = SparkSubmitOperator(
         task_id="submit_spark_random_dataframe_job",
-        application="""/opt/airflow/dags/spark_jobs/random_dataframe_job.py",  # Path to the Spark script
+        application="/opt/airflow/dags/spark_jobs/random_dataframe_job.py",  # Path to the Spark script
         conn_id="spark_default",  # Connection ID configured in Airflow
         application_args=[],
         conf={"spark.executor.memory": "1g", "spark.driver.memory": "1g"},
