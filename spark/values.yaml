@@ -1,0 +1,7 @@
+extraVolumes:
+    - name: files-volume
+      persistentVolumeClaim:
+        claimName: files-volume-pvc
+extraVolumeMounts:
+    - name: files-volume
+      mountPath: '/data/spark

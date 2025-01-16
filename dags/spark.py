@@ -2,30 +2,34 @@ from airflow import DAG
 from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
 from datetime import datetime
 
+# Define the default arguments for the DAG
 default_args = {
-    'owner': 'airflow',
-    'start_date': datetime(2025, 1, 1),
-    'retries': 1,
+    "owner": "airflow",
+    "depends_on_past": False,
+    "retries": 1,
 }
 
+# Define the DAG
 with DAG(
-    dag_id='spark_submit_example',
+    "spark_random_dataframe_dag",  # DAG Name
     default_args=default_args,
-    schedule_interval=None,
+    description="Run Spark transformations using SparkSubmitOperator",
+    schedule_interval=None,  # No schedule for now, trigger manually
+    start_date=datetime(2025, 1, 1),
     catchup=False,
 ) as dag:
 
-    spark_task = SparkSubmitOperator(
-        task_id='spark_submit_task',
-        application='/path/to/your/spark-job.py',  # Local or HDFS path to your Spark script
-        conn_id='spark_default',  # Connection ID created earlier
-        application_args=['arg1', 'arg2'],  # Optional arguments for your Spark job
-        conf={
-            'spark.executor.memory': '2g',
-            'spark.executor.cores': 2,
-        },
-        driver_memory='1g',
-        verbose=True,  # Enable verbose logging
+    # Task to submit the Spark job
+    submit_spark_job = SparkSubmitOperator(
+        task_id="submit_spark_random_dataframe_job",
+        application="""/opt/airflow/dags/spark_jobs/random_dataframe_job.py",  # Path to the Spark script
+        conn_id="spark_default",  # Connection ID configured in Airflow
+        application_args=[],
+        conf={"spark.executor.memory": "1g", "spark.driver.memory": "1g"},
+        executor_cores=2,
+        name="random_dataframe_job",
+        verbose=True,
     )
 
-    spark_task
+    submit_spark_job
+

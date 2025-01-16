@@ -1,25 +1,29 @@
-airflow:
-  kubernetesPodTemplate:
-    extraVolumeMounts:
-      - name: files-volume
-        mountPath: /data/airflow
-  
-    extraVolumes:
-      - name: files-volume
-        persistentVolumeClaim:
-          claimName: files-volume-pvc
 executor: KubernetesExecutor
-webserver:
-  defaultUser:
-    username: admin
-    password: hazem
 defaultAirflowRepository: hazemfrikhisof/airflow-spark
 defaultAirflowTag: "1.2"
+defaultUser:
+    enabled: true
+    role: Admin
+    username: admin
+    email: hazem.frikhi@gmail.com
+    firstName: admin
+    lastName: user
+    password: admin
+fernetKey: "b0-5kZnbDIkRbn9Czyxd8PZcRIR_6KVOd9IH8nLUDBo="
 image:
   repository: hazemfrikhisof/airflow-spark
   tag: "1.2"
   pullPolicy: Always
-
+persistence:
+    # Enable persistent volumes
+    enabled: true
+    # This policy determines whether PVCs should be deleted when StatefulSet is scaled down or removed.
+    persistentVolumeClaimRetentionPolicy: ~
+    # persistentVolumeClaimRetentionPolicy:
+    #   whenDeleted: Delete
+    #   whenScaled: Delete
+    # Volume size for worker StatefulSet
+    size: 10Gi
 dags:
   gitSync:
     enabled: true
@@ -28,4 +32,5 @@ dags:
     rev: "HEAD"               # Git revision to checkout
     depth: 1                  # Clone depth (1 for shallow clone)
     subPath: "dags" 
+
 
