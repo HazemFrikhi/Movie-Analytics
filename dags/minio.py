@@ -28,15 +28,10 @@ def connect_to_minio():
 def test_minio_connection():
     connect_to_minio()
 
-default_args = {
-    'owner': 'airflow',
-    'retries': 1,
-    'retry_delay': timedelta(minutes=5),
-}
+
 
 dag = DAG(
     'minio_connection_dag',
-    default_args=default_args,
     description='Test MinIO connection with boto3',
     schedule_interval=None,  # Only run manually or based on your needs
     start_date=datetime(2025, 1, 20),
