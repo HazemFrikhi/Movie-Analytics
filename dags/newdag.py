@@ -23,7 +23,7 @@ def run_spark_job():
     df.show()
 
     # Save the processed data to a CSV file
-    processed_df.write.csv("/path/to/output/processed_data.csv", header=True)
+    
 
     # Stop the Spark session
     spark.stop()
