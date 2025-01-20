@@ -1,34 +1,51 @@
+from airflow import DAG
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.operators.python import PythonOperator
-from airflow import DAG
 from datetime import datetime
+import boto3
+import os
 
-# Function to test the connection to MinIO
+# Boto3 MinIO Configuration
+MINIO_HOST = "http://minio:9000"  # Change 'minio' if different in your setup
+
+
+def connect_to_minio():
+    s3_client = boto3.client(
+        's3',
+        endpoint_url=MINIO_HOST,
+        aws_access_key_id="admin",
+        aws_secret_access_key="admin123",
+        region_name="us-east-1"
+    )
+    # Test the connection by listing the buckets
+    try:
+        response = s3_client.list_buckets()
+        print("Connected to MinIO successfully!")
+        print("Buckets:", response['Buckets'])
+    except Exception as e:
+        print(f"Failed to connect to MinIO: {e}")
+
 def test_minio_connection():
-    # Create a hook with MinIO connection details (for testing)
-    hook = S3Hook(
-        aws_conn_id='minio_default',  # Connection ID (we'll set up these params manually)
-        region_name='us-east-1',  # Can be any region (not necessary for MinIO, just for compatibility)
-        endpoint_url='minio.default.svc.cluster.local:9000',  # MinIO endpoint
-        aws_access_key_id='admin',  # Access key
-        aws_secret_access_key='admin123',  # Secret key
-    )
+    connect_to_minio()
 
-    bucket_name = 'test-bucket'
-    
-    # Check if the bucket exists
-    if not hook.check_for_bucket(bucket_name):
-        hook.create_bucket(bucket_name=bucket_name)
-    print(f"Bucket '{bucket_name}' exists or was created successfully!")
+default_args = {
+    'owner': 'airflow',
+    'retries': 1,
+    'retry_delay': timedelta(minutes=5),
+}
 
-# Define the DAG
-with DAG(
-    dag_id="test_minio",
-    start_date=datetime(2025, 1, 1),
-    schedule_interval=None,  # No schedule, run on trigger
+dag = DAG(
+    'minio_connection_dag',
+    default_args=default_args,
+    description='Test MinIO connection with boto3',
+    schedule_interval=None,  # Only run manually or based on your needs
+    start_date=datetime(2025, 1, 20),
     catchup=False,
-) as dag:
-    test_task = PythonOperator(
-        task_id="test_minio_connection",
-        python_callable=test_minio_connection,
-    )
+)
+
+# Task to test the connection
+test_connection_task = PythonOperator(
+    task_id='test_minio_connection',
+    python_callable=test_minio_connection,
+    dag=dag,
+)
