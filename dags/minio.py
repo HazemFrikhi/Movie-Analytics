@@ -9,7 +9,7 @@ def test_minio_connection():
     hook = S3Hook(
         aws_conn_id='minio_default',  # Connection ID (we'll set up these params manually)
         region_name='us-east-1',  # Can be any region (not necessary for MinIO, just for compatibility)
-        host='http://minio.default.svc.cluster.local:9000',  # MinIO host URL
+        endpoint_url='minio.default.svc.cluster.local:9000',  # MinIO endpoint
         aws_access_key_id='admin',  # Access key
         aws_secret_access_key='admin123',  # Secret key
     )
