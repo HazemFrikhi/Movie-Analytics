@@ -5,8 +5,8 @@ import boto3
 
 # Configuration for MinIO
 MINIO_ENDPOINT = "http://minio.default.svc.cluster.local:9000"  # Replace with your MinIO endpoint
-MINIO_ACCESS_KEY = "rusRKTeDAVjcdDfFcmiC"  # Replace with your access key
-MINIO_SECRET_KEY = "TmlNxeJk1NiHYffGWgKKNiTRoirWG4RhLFNtpo7u"  # Replace with your secret key
+MINIO_ACCESS_KEY = "KgyMpLt8zudSxsek90wM"  # Replace with your access key
+MINIO_SECRET_KEY = "VaP6K153yq7r4lAGU0LdEIBNRwFSFGiENhy0AIDd"  # Replace with your secret key
 MINIO_BUCKET = "example-bucket"  # Replace with your bucket name
 
 # Function to connect to MinIO and list buckets
