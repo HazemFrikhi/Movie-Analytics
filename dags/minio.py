@@ -1,46 +1,59 @@
 from airflow import DAG
-from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.operators.python import PythonOperator
 from datetime import datetime
 import boto3
-import os
 
-# Boto3 MinIO Configuration
-MINIO_HOST = "http://minio:9000"  # Change 'minio' if different in your setup
+# Configuration for MinIO
+MINIO_ENDPOINT = "http://minio.default.svc.cluster.local:9000"  # Replace with your MinIO endpoint
+MINIO_ACCESS_KEY = "rusRKTeDAVjcdDfFcmiC"  # Replace with your access key
+MINIO_SECRET_KEY = "TmlNxeJk1NiHYffGWgKKNiTRoirWG4RhLFNtpo7u"  # Replace with your secret key
+MINIO_BUCKET = "example-bucket"  # Replace with your bucket name
 
-
-def connect_to_minio():
+# Function to connect to MinIO and list buckets
+def connect_to_minio(**kwargs):
+    # Initialize the S3 client for MinIO
     s3_client = boto3.client(
-        's3',
-        endpoint_url=MINIO_HOST,
-        aws_access_key_id="admin",
-        aws_secret_access_key="admin123",
-        region_name="us-east-1"
+        "s3",
+        endpoint_url=MINIO_ENDPOINT,
+        aws_access_key_id=MINIO_ACCESS_KEY,
+        aws_secret_access_key=MINIO_SECRET_KEY,
     )
-    # Test the connection by listing the buckets
+    
+    # Create a bucket if it doesn't exist
     try:
-        response = s3_client.list_buckets()
-        print("Connected to MinIO successfully!")
-        print("Buckets:", response['Buckets'])
-    except Exception as e:
-        print(f"Failed to connect to MinIO: {e}")
+        s3_client.create_bucket(Bucket=MINIO_BUCKET)
+        print(f"Bucket '{MINIO_BUCKET}' created successfully.")
+    except s3_client.exceptions.BucketAlreadyOwnedByYou:
+        print(f"Bucket '{MINIO_BUCKET}' already exists.")
+    
+    # List all buckets
+    response = s3_client.list_buckets()
+    print("Buckets:")
+    for bucket in response["Buckets"]:
+        print(f"  - {bucket['Name']}")
 
-def test_minio_connection():
-    connect_to_minio()
-
-
-
+# Define the Airflow DAG
+default_args = {
+    "owner": "airflow",
+    "depends_on_past": False,
+    "retries": 1,
+}
 dag = DAG(
-    'minio_connection_dag',
-    description='Test MinIO connection with boto3',
-    schedule_interval=None,  # Only run manually or based on your needs
-    start_date=datetime(2025, 1, 20),
+    dag_id="minio_connect_dag",
+    default_args=default_args,
+    description="A DAG to connect to MinIO and list buckets",
+    schedule_interval=None,  # Run on demand
+    start_date=datetime(2023, 1, 1),
     catchup=False,
 )
 
-# Task to test the connection
-test_connection_task = PythonOperator(
-    task_id='test_minio_connection',
-    python_callable=test_minio_connection,
+# Task to connect to MinIO
+minio_task = PythonOperator(
+    task_id="connect_to_minio",
+    python_callable=connect_to_minio,
+    provide_context=True,
     dag=dag,
 )
+
+# Set task dependencies
+minio_task
